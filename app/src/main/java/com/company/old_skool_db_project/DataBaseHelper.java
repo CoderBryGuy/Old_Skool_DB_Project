@@ -64,9 +64,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         }
 
         Contact contact = new Contact(
-                cursor.getString(cursor.getColumnIndex(Contact.COLUMN_NAME)),
-                cursor.getString(cursor.getColumnIndex(Contact.COLUMN_EMAIL)),
-                cursor.getInt(cursor.getColumnIndex(Contact.COLUMN_ID))
+                cursor.getInt(cursor.getColumnIndexOrThrow(Contact.COLUMN_ID)),
+                cursor.getString(cursor.getColumnIndexOrThrow(Contact.COLUMN_NAME)),
+                cursor.getString(cursor.getColumnIndexOrThrow(Contact.COLUMN_EMAIL))
+
         );
 
         cursor.close();
@@ -79,29 +80,14 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String selectQuery = "SELECT * FROM " + Contact.TABLE_NAME + " ORDER BY " + Contact.COLUMN_ID + " DESC";
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
-//        Cursor cursor = db.query(Contact.TABLE_NAME,
-//                new String[]{
-//                        Contact.COLUMN_ID,
-//                        Contact.COLUMN_NAME,
-//                        Contact.COLUMN_EMAIL},
-//                Contact.COLUMN_ID + "=?",
-//                null,
-//                null,
-//                null,
-//                null,
-//                null);
-
-//        if(cursor != null){
-//            cursor.moveToFirst();
-//        }
 
         ArrayList<Contact> contactsList = new ArrayList<>();
-        if (cursor.moveToNext()) {
+        if (cursor.moveToFirst()) {
             do {
                 Contact contact = new Contact();
-                       contact.setId(cursor.getInt(cursor.getColumnIndex(Contact.COLUMN_ID)));
-                       contact.setName(cursor.getString(cursor.getColumnIndex(Contact.COLUMN_EMAIL)));
-                        contact.setEmail(cursor.getString(cursor.getColumnIndex(Contact.COLUMN_ID)));
+                       contact.setId(cursor.getInt(cursor.getColumnIndexOrThrow(Contact.COLUMN_ID)));
+                       contact.setName(cursor.getString(cursor.getColumnIndexOrThrow(Contact.COLUMN_NAME)));
+                        contact.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(Contact.COLUMN_EMAIL)));
 
                 contactsList.add(contact);
             }while(cursor.moveToNext());
@@ -118,9 +104,20 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         values.put(Contact.COLUMN_NAME, contact.getName());
         values.put(Contact.COLUMN_EMAIL, contact.getEmail());
 
-        return db.update((Contact.TABLE_NAME, values, Contact.COLUMN_ID + " = ?",
+        return db.update(Contact.TABLE_NAME, values, Contact.COLUMN_ID + " = ?",
                 new String[]{String.valueOf(contact.getId())});
 
     }
+
+    //delete contact
+    public void deleteContact(Contact contact){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(Contact.TABLE_NAME, Contact.COLUMN_ID + " = ? ", new String[]{String.valueOf(contact.getId())});
+        db.close();
+    }
+
+
+
+
 
 }
