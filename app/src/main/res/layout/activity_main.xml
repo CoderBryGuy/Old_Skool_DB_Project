@@ -6,13 +6,41 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".MainActivity">
-    <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello World!"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+
+    <com.google.android.material.appbar.AppBarLayout android:layout_width="0dp"
+                                                     android:layout_height="wrap_content" android:id="@+id/appBarLayout"
+                                                     app:layout_constraintEnd_toEndOf="parent"
+                                                     app:layout_constraintBottom_toTopOf="parent"
+                                                     app:layout_constraintTop_toTopOf="parent"
+                                                     app:layout_constraintStart_toStartOf="parent"
+    android:theme="@style/AppTheme.AppBarOverlay">
+
+        <androidx.appcompat.widget.Toolbar android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+        android:background="@color/design_default_color_primary" android:id="@+id/toolbar"
+        app:popupTheme="@style/AppTheme.PopupOverlay"/>
+
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <include layout="@layout/content_main"
+             android:id="@+id/include" app:layout_constraintTop_toBottomOf="@+id/appBarLayout"
+             app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+             app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton android:layout_width="wrap_content"
+                                                                           android:layout_height="wrap_content"
+                                                                           android:id="@+id/fab"
+                                                                           android:layout_margin="@dimen/fab_margin"
+                                                                           app:layout_constraintBottom_toBottomOf="parent"
+                                                                           app:layout_constraintEnd_toEndOf="parent"
+                                                                           app:layout_constraintStart_toStartOf="parent"
+                                                                           app:layout_constraintTop_toTopOf="parent"
+                                                                           android:layout_marginTop="450dp"
+                                                                           android:layout_marginStart="250dp"
+                                                                           android:src="@android:drawable/ic_menu_add"
+                                                                           android:contentDescription="@string/add_contact"/>
+
+    <!--                                                                           app:SrcCompat="@android:drawable/ic_dialog_email"-->
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
