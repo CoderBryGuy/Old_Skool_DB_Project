@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Old_Skool_DB_Project</string>
-    <string name="add_contact">Add Contact</string>
+    <string name="add_contact">Add Contact:</string>
+    <string name="update_contact">Update Contact:</string>
     <string name="name_txtview">name</string>
     <string name="email_txtvw">email</string>
     <string name="settings">Settings</string>
