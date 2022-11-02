@@ -3,4 +3,5 @@
     <string name="add_contact">Add Contact</string>
     <string name="name_txtview">name</string>
     <string name="email_txtvw">email</string>
+    <string name="settings">Settings</string>
 </resources>
