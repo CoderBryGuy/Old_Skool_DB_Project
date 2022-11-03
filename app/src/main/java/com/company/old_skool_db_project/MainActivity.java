@@ -1,7 +1,6 @@
 package com.company.old_skool_db_project;
 
 import android.content.DialogInterface;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,7 +19,6 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.company.old_skool_db_project.adapter.ContactsAdapter;
-import com.company.old_skool_db_project.adapter.ContactsAdapter.AlterContacts;
 import com.company.old_skool_db_project.db.entity.Contact;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -78,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
 
     //implementation *.adapter.ContactsAdapter.AlterContacts;
     @Override
-    public void addAndEditContact(final boolean isUpdated, final Contact contact, final int position) {
+    public void addAndEditContact(final boolean isUpdating, final Contact contact, final int position) {
         Log.d(TAG, "addAndEditContact: started");
         LayoutInflater layoutInflater = LayoutInflater.from(getApplicationContext());
         View view = layoutInflater.inflate(R.layout.add_contact, null);
@@ -88,19 +86,20 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
 
 
         TextView contactTitle = view.findViewById(R.id.change_contact_title);
-        final EditText contactName = view.findViewById(R.id.name_addCon);
-        final EditText contactEmail = view.findViewById(R.id.email_addCon);
-        contactTitle.setText(!isUpdated ? R.string.add_contact : R.string.update_contact);
+        final EditText contactName = view.findViewById(R.id.name_add_contact);
+        final EditText contactEmail = view.findViewById(R.id.email_add_contact);
+        contactTitle.setText(!isUpdating ? R.string.add_contact : R.string.update_contact);
 
-        if (isUpdated && contact != null) {
+        if (isUpdating && contact != null) {
             Log.d(TAG, "addAndEditContact: isupdated = true; editing contact");
+            
             contactName.setText(contact.getName());
             contactEmail.setText(contact.getEmail());
 
         }
 
         alerDialogBuilder.setCancelable(false)
-                .setPositiveButton(isUpdated ? "update" : "Save", new DialogInterface.OnClickListener() {
+                .setPositiveButton(isUpdating ? "update" : "Save", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Log.d(TAG, "onClick: alerdialogBuilder pos");
@@ -110,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Log.d(TAG, "onClick: alerdialogBuilder neg");
-                        if (isUpdated) {
+                        if (isUpdating) {
                             DeleteContact(contact, position);
                         } else {
                             dialogInterface.cancel();
@@ -125,13 +124,14 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.d(TAG, "onClick: AlertDialog.BUTTON_POSITIVE");
                 if (TextUtils.isEmpty(contactName.getText().toString())) {
                     Toast.makeText(MainActivity.this, "Enter a name.", Toast.LENGTH_SHORT).show();
                 } else {
                     alertDialog.dismiss();
                 }
 
-                if (isUpdated && contact != null) {
+                if (isUpdating && contact != null) {
                     UpdateContact(contactName.getText().toString(), contactEmail.getText().toString(), position);
 
                 }else{

@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.company.old_skool_db_project.MainActivity;
 import com.company.old_skool_db_project.R;
 import com.company.old_skool_db_project.db.entity.Contact;
 import org.jetbrains.annotations.NotNull;
@@ -100,8 +99,8 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.MyView
         public MyViewHolder(@NonNull @NotNull View itemView) {
             super(itemView);
 
-            nameTxtVw = itemView.findViewById(R.id.name_txtvw);
-            emailTxtVw = itemView.findViewById(R.id.email_txtvw);
+            nameTxtVw = itemView.findViewById(R.id.name_contact_list_item);
+            emailTxtVw = itemView.findViewById(R.id.email_contact_list_item);
 
         }
 
