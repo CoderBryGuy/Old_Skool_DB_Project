@@ -1,6 +1,10 @@
 package com.company.old_skool_db_project.db.entity;
 
+import android.util.Log;
+
 public class Contact {
+
+    private static final String TAG = "Contact";
 
     // constants for database
     public static final String TABLE_NAME = "contacts";
@@ -15,9 +19,11 @@ public class Contact {
 
     //constructors
     public Contact() {
+        Log.d(TAG, "Contact: created");
     }
 
     public Contact( int id, String name, String email) {
+        Log.d(TAG, "Contact: created");
         this.id = id;
         this.name = name;
         this.email = email;

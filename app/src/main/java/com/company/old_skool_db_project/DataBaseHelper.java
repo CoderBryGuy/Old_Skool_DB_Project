@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.ContactsContract;
+import android.util.Log;
 import androidx.annotation.Nullable;
 import com.company.old_skool_db_project.db.entity.Contact;
 
@@ -13,27 +14,33 @@ import java.util.ArrayList;
 
 public class DataBaseHelper extends SQLiteOpenHelper {
 
+    private static final String TAG = "DataBaseHelper";
+
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "contact_db";
 
     public DataBaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        Log.d(TAG, "DataBaseHelper: created");
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(Contact.CREATE_TABLE);
+        Log.d(TAG, "onCreate: started");
 
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Log.d(TAG, "onUpgrade: started");
         db.execSQL("DROP TABLE IF EXISTS " + Contact.TABLE_NAME);
         onCreate(db);
     }
 
     //insert data into db
     public long insertContact(String name, String email) {
+        Log.d(TAG, "insertContact: started");
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(Contact.COLUMN_NAME, name);
@@ -45,6 +52,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     //getting contact from db
     public Contact getContact(long id) {
+        Log.d(TAG, "getContact: started");
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.query(Contact.TABLE_NAME,
                 new String[]{
@@ -76,7 +84,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     //get all contacts
     public ArrayList<Contact> getAllContacts() {
-
+        Log.d(TAG, "getAllContacts: started");
         String selectQuery = "SELECT * FROM " + Contact.TABLE_NAME + " ORDER BY " + Contact.COLUMN_ID + " DESC";
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -99,6 +107,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     //update contact
     public long updateContact(Contact contact){
+        Log.d(TAG, "updateContact: started");
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(Contact.COLUMN_NAME, contact.getName());
@@ -111,8 +120,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     //delete contact
     public void deleteContact(Contact contact){
+        Log.d(TAG, "deleteContact: started");
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(Contact.TABLE_NAME, Contact.COLUMN_ID + " = ? ", new String[]{String.valueOf(contact.getId())});
+        int id = db.delete(Contact.TABLE_NAME, Contact.COLUMN_ID + " = ? ", new String[]{String.valueOf(contact.getId())});
+        Log.d(TAG, "deleteContact: deleted contact.id = " + id);
         db.close();
     }
 
