@@ -18,8 +18,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 import com.company.old_skool_db_project.adapter.ContactsAdapter;
 import com.company.old_skool_db_project.db.entity.Contact;
+import com.company.old_skool_db_project.db.entity.ContactsAppDatabase;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -34,9 +37,10 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
 
     //variables
     private ContactsAdapter mContactsAdapter;
-    private ArrayList<Contact> mContactArrayList = new ArrayList<>();
+    private final ArrayList<Contact> mContactArrayList = new ArrayList<>();
     private RecyclerView mRecyclerView;
-    private DataBaseHelper mDataBaseHelper;
+    //    private DataBaseHelper_OldSkool mDataBaseHelper;
+    private ContactsAppDatabase mContactsAppDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,16 +49,24 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
         Log.d(TAG, "onCreate: started");
 
         //Toolbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setTitle("My Favorite Contacts");
 
         //RecyclerView
         mRecyclerView = findViewById(R.id.recyclerViewContacts);
-        mDataBaseHelper = new DataBaseHelper(this);
+//        mDataBaseHelper = new DataBaseHelper_OldSkool(this);
 
-        //Contacts list
-        mContactArrayList.addAll(mDataBaseHelper.getAllContacts());
+        //Database
+        mContactsAppDatabase = Room.databaseBuilder(
+                        getApplicationContext(),
+                        ContactsAppDatabase.class,
+                        "ContactDB")
+                .allowMainThreadQueries()
+                .build();
+
+        //display all contacts list
+        mContactArrayList.addAll(mContactsAppDatabase.getContactDAO().getContacts());
         mContactsAdapter = new ContactsAdapter(this, mContactArrayList, this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         mRecyclerView.setLayoutManager(layoutManager);
@@ -62,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
         mRecyclerView.setAdapter(mContactsAdapter);
 
         //fab
-        FloatingActionButton mFab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton mFab = findViewById(R.id.fab);
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -92,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
 
         if (isUpdating && contact != null) {
             Log.d(TAG, "addAndEditContact: isupdated = true; editing contact");
-            
+
             contactName.setText(contact.getName());
             contactEmail.setText(contact.getEmail());
 
@@ -134,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
                 if (isUpdating && contact != null) {
                     UpdateContact(contactName.getText().toString(), contactEmail.getText().toString(), position);
 
-                }else{
+                } else {
                     createContact(contactName.getText().toString(), contactEmail.getText().toString());
                 }
             }
@@ -144,9 +156,13 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
 
     private void createContact(String contactName, String contactEmail) {
         Log.d(TAG, "createContact: started");
-        long id = mDataBaseHelper.insertContact(contactName, contactEmail);
-        Contact contact = mDataBaseHelper.getContact(id);
-        if(contact != null){
+//        long id = mDataBaseHelper.insertContact(contactName, contactEmail);
+        //        Contact contact = mDataBaseHelper.getContact(id);
+
+
+        long id = mContactsAppDatabase.getContactDAO().addContact(new Contact(0, contactName, contactEmail));
+        Contact contact = mContactsAppDatabase.getContactDAO().getContact(id);
+        if (contact != null) {
             mContactArrayList.add(0, contact);
             mContactsAdapter.notifyDataSetChanged();
         }
@@ -159,7 +175,8 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
         Contact contact = mContactArrayList.get(position);
         contact.setName(contactName);
         contact.setEmail(contactEmail);
-        mDataBaseHelper.updateContact(contact);
+//        mDataBaseHelper.updateContact(contact);
+        mContactsAppDatabase.getContactDAO().updateContact(contact);
         mContactArrayList.set(position, contact);
         mContactsAdapter.notifyDataSetChanged();
         Log.d(TAG, "UpdateContact: contact updated id = " + contact.getId() + " name = " + contact.getName());
@@ -169,7 +186,8 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
     private void DeleteContact(Contact contact, int position) {
         Log.d(TAG, "DeleteContact: started");
         Contact contact1 = mContactArrayList.remove(position);
-        mDataBaseHelper.deleteContact(contact);
+//        mDataBaseHelper.deleteContact(contact);
+        mContactsAppDatabase.getContactDAO().deleteContact(contact);
         mContactsAdapter.notifyDataSetChanged();
         if (contact1 != null) {
             Log.d(TAG, "DeleteContact: contact deleted = " + contact1.getName());
@@ -190,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
 
 
         int id = item.getItemId();
-        if(id == R.id.action_settings){
+        if (id == R.id.action_settings) {
             return true;
         }
 
@@ -198,9 +216,4 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
         return super.onOptionsItemSelected(item);
     }
 
-    //
-//    @Override
-//    public void onPointerCaptureChanged(boolean hasCapture) {
-//        super.onPointerCaptureChanged(hasCapture);
-//    }
 }

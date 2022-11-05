@@ -17,8 +17,8 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.MyView
 
     //1. variables
 
-    private Context mContext;
-    private ArrayList<Contact> mContacts;
+    private final Context mContext;
+    private final ArrayList<Contact> mContacts;
 //    private MainActivity mMainActivity;
 
     public interface AlterContacts{
