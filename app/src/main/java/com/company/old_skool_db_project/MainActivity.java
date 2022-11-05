@@ -1,6 +1,8 @@
 package com.company.old_skool_db_project;
 
 import android.content.DialogInterface;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,14 +21,19 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
+import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.company.old_skool_db_project.adapter.ContactsAdapter;
 import com.company.old_skool_db_project.db.entity.Contact;
 import com.company.old_skool_db_project.db.entity.ContactsAppDatabase;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements ContactsAdapter.AlterContacts {
 
@@ -57,16 +64,44 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
         mRecyclerView = findViewById(R.id.recyclerViewContacts);
 //        mDataBaseHelper = new DataBaseHelper_OldSkool(this);
 
+        //CallBacks
+//        RoomDatabase.Callback myCallBack = new RoomDatabase.Callback() {
+//            @Override
+//            public void onCreate(@NonNull @NotNull SupportSQLiteDatabase db) {
+//                super.onCreate(db);
+//
+//                //4 contacts already built into contacts
+//                createContact("Bill Gates", "gman@microsoft.com");
+//                createContact("Nicolas Tesla", "tesla@gmail.com");
+//                createContact("Mark Zuckerberg", "zuck@facebook.com");
+//                createContact("Elon Musk", "Musk@tesla.com");
+//
+//                Log.i(TAG, "onOpen: database created");
+//
+//            }
+//
+//            @Override
+//            public void onOpen(@NonNull @NotNull SupportSQLiteDatabase db) {
+//                super.onOpen(db);
+//
+//                Log.i(TAG, "onOpen: database opened");
+//            }
+//        };
+
         //Database
-        mContactsAppDatabase = Room.databaseBuilder(
-                        getApplicationContext(),
-                        ContactsAppDatabase.class,
-                        "ContactDB")
-                .allowMainThreadQueries()
+        mContactsAppDatabase = Room.databaseBuilder(getApplicationContext(),
+                        ContactsAppDatabase.class, "ContactDB")
+//                .addCallback(myCallBack)
+                //thread run in background now
+//                .allowMainThreadQueries()
                 .build();
 
         //display all contacts list
-        mContactArrayList.addAll(mContactsAppDatabase.getContactDAO().getContacts());
+        //replaced with to run on background thread
+//        mContactArrayList.addAll(mContactsAppDatabase.getContactDAO().getContacts());
+
+        displayAllContactsInBackground();
+
         mContactsAdapter = new ContactsAdapter(this, mContactArrayList, this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         mRecyclerView.setLayoutManager(layoutManager);
@@ -110,24 +145,22 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
 
         }
 
-        alerDialogBuilder.setCancelable(false)
-                .setPositiveButton(isUpdating ? "update" : "Save", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        Log.d(TAG, "onClick: alerdialogBuilder pos");
-                    }
-                })
-                .setNegativeButton("delete", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        Log.d(TAG, "onClick: alerdialogBuilder neg");
-                        if (isUpdating) {
-                            DeleteContact(contact, position);
-                        } else {
-                            dialogInterface.cancel();
-                        }
-                    }
-                });
+        alerDialogBuilder.setCancelable(false).setPositiveButton(isUpdating ? "update" : "Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Log.d(TAG, "onClick: alerdialogBuilder pos");
+            }
+        }).setNegativeButton("delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Log.d(TAG, "onClick: alerdialogBuilder neg");
+                if (isUpdating) {
+                    DeleteContact(contact, position);
+                } else {
+                    dialogInterface.cancel();
+                }
+            }
+        });
 
         //.show();
 
@@ -156,6 +189,8 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
 
     private void createContact(String contactName, String contactEmail) {
         Log.d(TAG, "createContact: started");
+
+        //replaced with room addcontact()
 //        long id = mDataBaseHelper.insertContact(contactName, contactEmail);
         //        Contact contact = mDataBaseHelper.getContact(id);
 
@@ -175,6 +210,7 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
         Contact contact = mContactArrayList.get(position);
         contact.setName(contactName);
         contact.setEmail(contactEmail);
+        //replaced with room update contact
 //        mDataBaseHelper.updateContact(contact);
         mContactsAppDatabase.getContactDAO().updateContact(contact);
         mContactArrayList.set(position, contact);
@@ -186,6 +222,7 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
     private void DeleteContact(Contact contact, int position) {
         Log.d(TAG, "DeleteContact: started");
         Contact contact1 = mContactArrayList.remove(position);
+        //replaced with room deletecontact()
 //        mDataBaseHelper.deleteContact(contact);
         mContactsAppDatabase.getContactDAO().deleteContact(contact);
         mContactsAdapter.notifyDataSetChanged();
@@ -193,6 +230,33 @@ public class MainActivity extends AppCompatActivity implements ContactsAdapter.A
             Log.d(TAG, "DeleteContact: contact deleted = " + contact1.getName());
         }
 
+    }
+
+    private void displayAllContactsInBackground() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        Log.d(TAG, "displayAllContactsInBackground: started");
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+
+                Log.d(TAG, "run: background thread running");
+
+                //background work
+                mContactArrayList.addAll(mContactsAppDatabase.getContactDAO().getContacts());
+
+                //run after background work
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "run: background thread finished. Running handler.post new Runnable");
+                        mContactsAdapter.notifyDataSetChanged();
+
+                    }
+                });
+            }
+        });
     }
 
     //Menu bar
